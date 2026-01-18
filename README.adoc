@@ -1,6 +1,6 @@
 == MW210V_Lathe_Gears
 
-Calculate / determine gear sets for feedrates and thread cutting on the MW210V and similar lathes. Inspired by the program by Matthias Wandel <https://github.com/Matthias-Wandel/lathe-thread-gears>, but apart from a handful lines of code, completely different.
+Calculate / determine gear sets for feedrates and thread cutting on the MW210V and similar lathes. Inspired by the program by Matthias Wandel <https://github.com/Matthias-Wandel/lathe-thread-gears>, but apart from perhaps a handful lines of code, completely different.
 
 The gear tables on these lathes aren't great. Missing feedrates, inaccurate rates, it's pretty bad.
 
@@ -33,7 +33,11 @@ Target feedrates: [7, 8, 9, 10, 11, 14, 19, 20, 22, 24, 28, 32, 40, 44]
              60    H
    7.07571   24   40  Error: 1.082%
               H   52
-
+   .
+   .
+And so on...
+   .
+   .
 ....
 
 Running 'pyton3 lathe_gears.py -h' gets you:
