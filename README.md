@@ -23,7 +23,7 @@ options:
 
   -h, --help            show this help message and exit
   
-  -g, --gears GEARS     Comma separated list of vailable gears, e.g.
+  -g, --gears GEARS     Comma separated list of available gears, e.g.
                         -g=84,72,60,42
   
   -p, --pitches PITCHES
