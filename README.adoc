@@ -1,4 +1,5 @@
-# MW210V_Lathe_Gears
+== MW210V_Lathe_Gears
+
 Calculate / determine gear sets for feedrates and thread cutting on the MW210V and similar lathes. Inspired by the program by Matthias Wandel <https://github.com/Matthias-Wandel/lathe-thread-gears>, but apart from a handful lines of code, completely different.
 
 The gear tables on these lathes aren't great. Missing feedrates, inaccurate rates, it's pretty bad.
