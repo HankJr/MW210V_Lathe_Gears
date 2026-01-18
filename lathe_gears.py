@@ -113,7 +113,7 @@ def write_data_file(file_path):
     lines = [
         '# Lathe data listing. Data here is valid for my MW210V 8x39.',
         '# Be careful adding gears, possibilities grow exponentially,',
-        '# 25 gears give about 7 MILLION possibilities...',
+        '# 25 gears give about 1.25 BILLION possibilities...',
         '# Here\'s a graph. <https://www.desmos.com/calculator/cpiettwsy2>',
         '# Parameter order doesn\'t matter. Not all parameters need',
         '# to be here, but those that are will override the ones in',
@@ -174,10 +174,6 @@ def read_data_file(file_path):
     # Scrub the '\n' newline line endings.
     file_lines = [item[0:-1] for item in file_lines]
     return file_lines
-
-# Generate all possible combinations of 3, 4,and 5 gears, in a single list.
-def possible_combinations(gears):
-    return itertools.chain.from_iterable(itertools.combinations(gears, r) for r in [3,4,5])
 
 # Check linear fit ('A' gear reaches Spindle gear).
 # 'item' is AACCE ABDDF AACDF ABDCE  for I through IV (above) respectively.
@@ -293,7 +289,7 @@ def conversion(value):
 # CLI arguments parsing.
 
 parser = argparse.ArgumentParser(description="Determine gear sets for feed-rates on a lathe, written with the MW210V in mind.")
-parser.add_argument('-g', '--gears', type=csv_to_list, help="Comma separated list of available gears, e.g. -g=84,72,60,42")
+parser.add_argument('-g', '--gears', type=csv_to_list, help="Comma separated list of vailable gears, e.g. -g=84,72,60,42")
 parser.add_argument('-p', '--pitches', type=csv_to_list, help="Comma separated list of feedrate(s) of interest, e.g. -p=8,12,16,24")
 parser.add_argument('-u', '--unit', choices=['mm','tpi'], help="Pitch unit, mm is the default.")
 parser.add_argument('-c', '--check',  type=csv_to_list, help="Check a gear set, given as a comma separated list of 6(!) gear positions A B C D E F, e.g. -c=60,40,H,80,H,56 ('H' for empty positions) for fit and resulting pitch.")
@@ -401,15 +397,25 @@ if args.check:
 start_time = time.perf_counter()
 
 # Get some numbers.
-all_sets=list(possible_combinations(gears_available))
-total = len(all_sets)
-permutations=possible_permutations(len(gears_available))
+all_sets=list(itertools.chain.from_iterable(itertools.combinations(gears_available, r) for r in [3,4,5]))
+total_sets = len(all_sets)
+total_permutations=possible_permutations(len(gears_available))
+# Just in case the user was being funny...
+pitches.sort()
 
 # Inform the user.
-print(f"\nFound {len(all_sets)} combinations.")
-print(f"\nChecking {permutations} possible permutations. This may take some time.")
+print('Lathe feedrate and thread cutting gear set layouts for MW210V lathe.\n')
+print(f'Available gears: {gears_available}\n')
+print(f'Target feedrates: {pitches}\n')
+print(f"Found {total_sets} combinations.\n")
+print(f"Checking {total_permutations} possible permutations. This may take some time.")
 
-# Turn combinations into populations ('place gears on the lathe'),
+# And log some info.
+logger.info('Lathe feedrate and thread cutting gear set layouts for MW210V lathe.\n')
+logger.info(f'Available gears: {gears_available}\n')
+logger.info(f'Target feedrates: {pitches}\n')
+
+# All permutations of each possible gear combination is 'placed on the lathe',
 # discarding any that don't fit.
 fitting_sets=[]
 counter=0
@@ -417,7 +423,7 @@ for s in all_sets:
     counter = counter + 1
     # The progress bar takes a string comment like "Processing", wich seems
     # bit obvious, so, an empty string here, but, fill your boots... ;-)
-    print_progress_bar(counter, total, "")
+    print_progress_bar(counter, total_sets, "")
     # Gears are 'placed' on the lathe along the mesh-line,
     # in the sequence of the set, see 'p = [A, ...] comments below.
     # Since the _order_ of the gears changes the ratio, we also want each
@@ -457,18 +463,10 @@ for s in all_sets:
 # Prepare for 'search'.
 fitting_sets.sort(key=lambda x: x[0])
 total_fitting_sets=len(fitting_sets)
-# Just in case the user was being funny...
-pitches.sort()
-
-# Start output file.
-logger.info('Lathe feedrate and thread cutting gear set layouts for MW210V lathe.\n')
-logger.info(f'Available gears: {gears_available}')
-logger.info(f'Target feedrates: {pitches}\n')
 
 # More user info.
-print (f"\n\n Discarded {permutations-total_fitting_sets}, which do not fit on the lathe.")
-print (f"\nFrom the remaining {total_fitting_sets} the nearest matches to the target pitches are:")
-print("")
+print (f"\n\nDiscarded {total_permutations-total_fitting_sets}, which do not fit on the lathe.\n")
+print (f"From the remaining {total_fitting_sets} the nearest matches to the target pitches are:\n")
 
 # Search all populations for closest fit to target pitches,
 # and publish nearest smaller and nearest bigger result.
