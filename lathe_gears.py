@@ -113,7 +113,7 @@ def write_data_file(file_path):
     lines = [
         '# Lathe data listing. Data here is valid for my MW210V 8x39.',
         '# Be careful adding gears, possibilities grow exponentially,',
-        '# 25 gears give about 1.25 BILLION possibilities...',
+        '# 25 gears give about 7 MILLION possibilities...',
         '# Here\'s a graph. <https://www.desmos.com/calculator/cpiettwsy2>',
         '# Parameter order doesn\'t matter. Not all parameters need',
         '# to be here, but those that are will override the ones in',
