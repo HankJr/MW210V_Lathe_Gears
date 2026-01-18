@@ -20,6 +20,7 @@ Determine gear sets for feed-rates on a lathe, written with the MW210V in
 mind.
 
 options:
+
   -h, --help            show this help message and exit
   
   -g, --gears GEARS     Comma separated list of vailable gears, e.g.
