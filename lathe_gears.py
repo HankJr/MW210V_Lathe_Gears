@@ -456,15 +456,13 @@ for s in all_sets:
 
 # Prepare for 'search'.
 fitting_sets.sort(key=lambda x: x[0])
+total_fitting_sets=len(fitting_sets)
 # Just in case the user was being funny...
 pitches.sort()
-# Grab the first target.
-target = pitches.pop(0)
-total_fitting_sets=len(fitting_sets)
 
 # Start output file.
 logger.info('Lathe feedrate and thread cutting gear set layouts for MW210V lathe.\n')
-logger.info(f'Available gears: {gears_available}.')
+logger.info(f'Available gears: {gears_available}')
 logger.info(f'Target feedrates: {pitches}\n')
 
 # More user info.
@@ -474,6 +472,8 @@ print("")
 
 # Search all populations for closest fit to target pitches,
 # and publish nearest smaller and nearest bigger result.
+# Grab the first target.
+target = pitches.pop(0)
 for i in range(total_fitting_sets-1):
     p = fitting_sets[i]
     if p[0] > target:
