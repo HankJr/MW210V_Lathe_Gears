@@ -14,6 +14,7 @@ The 'lathe_gears_result' is an example of the output file.
 
 Running 'pyton3 lathe_gears.py -h' gets you:
 
+....
 usage: lathe_gears.py [-h] [-g GEARS] [-p PITCHES] [-u {mm,tpi}] [-c CHECK]
                       [-f [FILE ...]] [-e [EXAMPLE ...]] [-o OUTPUT]
 Determine gear sets for feed-rates on a lathe, written with the MW210V in
@@ -38,4 +39,4 @@ options:
                         Create an example lathe data file and exit, file name
                         is optional.
   -o, --output OUTPUT   Output file name, default is 'lathe_gears_result'.
-
+....
