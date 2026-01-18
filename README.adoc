@@ -16,7 +16,7 @@ The 'lathe_gears_result' is an example of the output file, which looks like:
 Lathe feed/thread cutting gear populations for MW210V lathe.
 
 Available gears: [24, 30, 40, 48, 50, 52, 60, 60, 66, 70, 72, 75].
-Target feedrates: [7, 8, 9, 10, 11, 14, 19, 20, 22, 24, 28, 32, 40, 44]
+Target feedrates: [6, 7, 8, 9, 10, 11, 14, 19, 20, 22, 24, 28, 32, 40, 44]
 
              72    H
    5.98714   30   75  Error: -0.214%
