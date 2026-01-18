@@ -293,7 +293,7 @@ def conversion(value):
 # CLI arguments parsing.
 
 parser = argparse.ArgumentParser(description="Determine gear sets for feed-rates on a lathe, written with the MW210V in mind.")
-parser.add_argument('-g', '--gears', type=csv_to_list, help="Comma separated list of vailable gears, e.g. -g=84,72,60,42")
+parser.add_argument('-g', '--gears', type=csv_to_list, help="Comma separated list of available gears, e.g. -g=84,72,60,42")
 parser.add_argument('-p', '--pitches', type=csv_to_list, help="Comma separated list of feedrate(s) of interest, e.g. -p=8,12,16,24")
 parser.add_argument('-u', '--unit', choices=['mm','tpi'], help="Pitch unit, mm is the default.")
 parser.add_argument('-c', '--check',  type=csv_to_list, help="Check a gear set, given as a comma separated list of 6(!) gear positions A B C D E F, e.g. -c=60,40,H,80,H,56 ('H' for empty positions) for fit and resulting pitch.")
