@@ -21,20 +21,26 @@ mind.
 
 options:
   -h, --help            show this help message and exit
+  
   -g, --gears GEARS     Comma separated list of vailable gears, e.g.
                         -g=84,72,60,42
+  
   -p, --pitches PITCHES
                         Comma separated list of feedrate(s) of interest, e.g.
                         -p=8,12,16,24
+  
   -u, --unit {mm,tpi}   Pitch unit, mm is the default.
+  
   -c, --check CHECK     Check a gear set, given as a comma separated list of
                         6(!) gear positions A B C D E F, e.g.
                         -c=60,40,H,80,H,56 ('H' for empty positions) for fit
                         and resulting pitch.
+  
   -f, --file [FILE ...]
                         Use data from file, provide full path if it's not
                         located in the program directory, default is local
                         file 'lathe_data'.
+  
   -e, --example [EXAMPLE ...]
                         Create an example lathe data file and exit, file name
                         is optional.
