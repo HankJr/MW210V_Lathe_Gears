@@ -2,13 +2,15 @@
 
 Calculate / determine gear sets for feedrates and thread cutting on the MW210V and similar lathes. Inspired by the program by Matthias Wandel <https://github.com/Matthias-Wandel/lathe-thread-gears>, but apart from perhaps a handful lines of code, completely different.
 
+There's more info for this code here on my website <http://hankjr.ca/lathes/>.
+
 The gear tables on these lathes aren't great. Missing feedrates, inaccurate rates, it's pretty bad.
 
 This Python program will check all possible combinations that are possible with the collection of gears you have available, and gives you the nearset approximations of the feedrates you specify.
 
 Results are written to stdout, as well as a logfile 'gears_result'. Data (gears available, feedrates desired, lathe specifics &c.) is entered into a config/data input file 'lathe_data' that is read at startup.
 
-The output in 'gears_result' is (by default) formatted like the gear table on the lathe and looks like:
+The output in 'gears_result' is formatted like the gear table on the lathe and looks like:
 
 ....
 Lathe feed/thread cutting gear populations for MW210V lathe.
