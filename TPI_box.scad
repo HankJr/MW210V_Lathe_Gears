@@ -4,6 +4,7 @@
 */
 
 /* You gotta get The GHOUL. */
+/* The GHOUL is my Great Helpful OpenSCAD Unified Library; also on GitHub: https://github.com/HankJr/The-GHOUL/ */
 include<TheGHOUL/Config.scad>
 
 $Verbose=true;
