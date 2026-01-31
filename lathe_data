@@ -1,0 +1,83 @@
+# Lathe data listing. Data here is valid for my MW210V 8x39.
+# Parameter order doesn't matter, any parameters given on the command line
+# will override the ones provided here.
+#
+# DO NOT CHANGE THE VARIABLE NAMES.
+# DO NOT CHANGE THE FORMAT!
+# DO NOT PROVIDE 'EMPTY' PARAMETERS (i.e., a name without a value).
+#
+# IMPORTANT: ALL THE PARAMETERS HERE ARE REQUIRED!!!
+#
+# NOTE: spindle_diameter, leadscrew_diameter, max_centers, min_out_dim, and
+# gear_clearance are 'equivalent sizes', that is to say, they are the number
+# of teeth a gear of the same dimension as the desired dimension would have.
+# They SHOULD be given as integers--gears don't have fractional teeth.
+# The ONLY decimal figures here should be metric pitches.
+# If you know about modules and gears, you know what I'm talking about.
+# If you don't, GTS, you're about to run a lathe, aren't you?
+# ------------------------------------------------------------------------------
+# There are four possible gear configurations on the MW210:
+#
+# 'H' designates a spacer bushing, or just a small gear that won't interfere,
+# '|' designates meshing, '-' designates a gearpost, and '=' designates the
+# leadscrew. 'S' is the (fixed) spindle gear.
+#
+#  I      II      III     IV
+#
+# S      S       S       S
+# |      |       |       |
+# A-H    A-B     A-H     A-B      There is only one possible population
+# |        |     |         |      with 3 or 5 gears (I and IV);there are two
+# C-H    H-D     C-D     C-D      possibilities with 4 (II and III).
+# |        |       |     |        I call II the 'dogleg' and III the 'flash'.
+# E=H    H=F     H=F     E=H
+# ------------------------------------------------------------------------------
+# LEGEND:
+# pitch_unit             -- Unit ('mm' or 'tpi') of the desired pitches.
+# spindle_teeth          -- Fixed drive gear on spindle.
+# spindle_diameter       -- How much space is taken up by the spindle*.
+# leadscrew_pitch        -- Leadscrew pitch.
+# leadscrew_unit         -- mm, unless you found/made an imperial leadscrew...
+# leadscrew_diameter     -- How much space is taken up by the shaft**.
+# max_centers            -- Max center distance of gear mounting posts.
+# min_out_dim            -- Min outside dimension (so A touches the spindle).
+# gear_clearance         -- With both posts fully occupied, i.e. 5 gears used,
+#                           clearance between the non-meshing gears A and C.
+# gears_output_file      -- Output file name.
+# output_format          -- Output format, 'layout' prints only the best gear
+#                           sets like on the lathe gear table, 'list' prints
+#                           ALL zero-error gear sets in a more compact fashion,
+#                           as well as the nearset smaller and larger results
+#                           of pitches that cannot achieve zero error.
+# check_set_output_file  -- Output file name when using the -c option.
+#
+# NOTES:
+# *  The spindle limits the size of the 'B' gear. This dimension is
+#    essentially the number of teeth a gear matching the diameter of the
+#    spindle would have. Ish. This value should include a safety margin.
+# ** The leadscrew limits the size of the gear paired with its meshing gear on
+#    the bottom gear post. This dimension is essentially the number of teeth a
+#    gear matching the diameter of the shaft would have. Ish. This value
+#    should include a safety margin.
+# ------------------------------------------------------------------------------
+# PARAMETERS:
+#
+# Some common Metric pitches are 0.8,1,1.5,1.75,2,2.5,3,3.5,4,4.5,5
+# Some common SAE pitches are 40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6
+#
+# These gears came with my lathe; be careful, processing time increases
+# exponentially with gear numbers:
+gears_available=20,24,33,35,40,48,50,52,60,60,66,70,72,75,80,80,84
+pitches=40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6
+pitch_unit=tpi
+spindle_teeth=56
+spindle_diameter=56
+leadscrew_pitch=2
+leadscrew_unit=mm
+leadscrew_diameter=23
+max_centers=135
+min_out_dim=115
+gear_clearance=4
+gears_output_file=gears_result
+output_format=layout
+check_set_output_file=check_set_results

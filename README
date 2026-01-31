@@ -1,0 +1,66 @@
+# Program for working out feed gear ratios for the ubiquitous MW210V lathe.
+# With a bit of doctoring it'll probably do for other lathes as well...
+#
+# For the paranoid and similarly encumbered:
+# This code lives under the burden of the un-license.
+# This program should have reached you with accompanied by a file with
+# the name 'un-license'. Read that if you wish.
+# For more information, please refer to <https://unlicense.org/>
+#
+# This program was inspired by the one written by Matthias Wandel, see:
+# <https://github.com/Matthias-Wandel/lathe-thread-gears>
+
+# ------------------------------------------------------------------------------
+# For (a little) help try: ~/this/file/path$ pyhton3 lathe_gears.py -h
+# ------------------------------------------------------------------------------
+# There are four possible gear configurations on the MW210:
+#
+# 'H' designates a spacer bushing, '|' designates meshing, '-' designates a
+# gearpost, and '=' designates the leadscrew. 'S' is the (fixed) spindle gear.
+#
+#  I      II      III     IV
+#
+# S      S       S       S
+# |      |       |       |
+# A-H    A-B     A-H     A-B      There is only one possible population
+# |        |     |         |      with 3 or 5 gears (I and IV);there are two
+# C-H    H-D     C-D     C-D      possibilities with 4 (II and III).
+# |        |       |     |        I call II the 'dogleg' and III the 'flash'.
+# E=H    H=F     H=F     E=H
+# ------------------------------------------------------------------------------
+# Output formats, there are two to choose from:
+# 'list' lists ALL gear sets that will achieve the requested pitches,
+# in a simple list like this:
+#
+#  9, [9.0, 40, 1, 35, 80, 1, 72, 22.559181427229728].
+#  9, [9.0, 33, 1, 35, 80, 1, 72, 24.481285369304718].
+#  10, [10.0, 48, 1, 50, 1, 35, 1, 8.144527815247077].
+#
+# And so on, the first number is the pitch target, the values in square
+# brackets are: actual pitch of the set, then the gears A,B,C,D,E,F with empty
+# spots given as '1', then the standard deviation of the gears, indicating
+# wheter there is a wide spread (very large and very small) of gears used in
+# the set. In my opinion, a smaller spread is preferable--YMMV.
+# 'layout' lists only the best (see above) sets, in a pretty layout like this:
+#
+#            84    H
+#   7.0000   42   60  Error: 0.000% or 0.0 Thou per Inch
+#             H   35
+# -- 7 TPI --------------
+#            40    H
+#   7.0041   33   70  Error: 0.058% or 0.6 Thou per Inch
+#             H   52
+#
+# The top layout is the one closest and NOT greater, the bottom layout is the
+# FIRST ONE GREATER than the desired pitch, i.e., these are the two nearest
+# options.
+
+# ------------------------------------------------------------------------------
+# NOTES
+# *  The spindle limits the size of the 'B' gear. This dimension is
+#    essentially the number of teeth a gear matching the diameter of the
+#    spindle would have. Ish; this value should include a safety margin.
+# ** The leadscrew limits the size of the gear paired with its meshing gear on
+#    the bottom gear post. This dimension is essentially the number of teeth a
+#    gear matching the diameter of the shaft would have. Ish; this value
+#    should include a safety margin.
