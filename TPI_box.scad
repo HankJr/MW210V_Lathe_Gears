@@ -4,17 +4,33 @@
 */
 
 /* You gotta get The GHOUL. */
-/* The GHOUL is my Great Helpful OpenSCAD Unified Library; also on GitHub: https://github.com/HankJr/The-GHOUL/ */
+/*
+  The GHOUL is my Great Helpful OpenSCAD Unified Library.
+  You can find The GHOUL here:
+    http://hankjr.ca/theghoul
+  or on GitHub:
+    https://github.com/HankJr/The-GHOUL
+*/
 include<TheGHOUL/Config.scad>
+
+/*
+ From tpi_box_gears.py I've chosen this set, because it not only is relatively 'compact', but also allows for a good minimum feedrate of 3.3 thou.
+ [140, 127, 40, 35, 132, 64, 44.45]
+ This is a decent option, but it's a bit bigger, and its smallest feedrate is 3.6 thou.
+ [140, 127, 64, 60, 131, 65, 47.625]
+ If you don't mind some bigger gears, this one gives a minimum feedrate of under 2 thou, and can still do 3 tpi. It also manages 7 tpi with zero error--which the others don't--I wonder why ;-).
+ [160, 127, 63, 36, 154, 62, 25.4]
+*/
+
 
 $Verbose=true;
 S=56;       // Spindle gear.
-P=140;      // Primary or 'Input' gear.
-I=127;      // Inch gear (smallest integer 'inch-fold' -- 5x24.4=127).
-M=40;       // Third gear.
-N=35;       // Fourth gear.
-Q=I+M-N;    // Fifth (intermediate) gear.
-O=P+56-Q;   // Sixth (intermediate) or 'Output' gear.
+P=140;      // Primary or 'Input' gear on the main shaft; must be bigger than its keyed neighbour:
+I=127;      // Inch gear, keyed to input gear, 127 is the smallest integer 'inch-fold': 5x24.4, a prime number--of course.
+M=40;       // Third gear, on the 'countershaft' keyed together with:
+N=35;       // Fourth gear, which drives the:
+Q=I+M-N;    // Fifth (idler) gear, on the main shaft, which drives:
+O=P+S-Q;    // Sixth (idler) or 'Output' gear on the spindle, double-wide, next to the 'S' gear.
 
 // 'Layout' angle; M and N gears position.
 LA=120;
@@ -33,6 +49,8 @@ FA=                         LA*I/M*N/O      +  SA*S/P*I/M*N/O;
 
 // Publish gear info (to correlate with tpi_box_gears.py).
 Echo(["PIMNQO = ",P,", ",I,", ",M,", ",N,", ",Q,", ",O,"."]);
+Echo(["Output gear Z = ",O,"."]);
+Echo(["Effective output teeth Z-eff =",S/P*I/M*N,"."]);
 
 // Flip 'the lot' sso the X-axis becomes the spindle axis. Maybe for more later.
 rotate([90,30,0]){

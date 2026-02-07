@@ -12,7 +12,7 @@
 # gear_clearance are 'equivalent sizes', that is to say, they are the number
 # of teeth a gear of the same dimension as the desired dimension would have.
 # They SHOULD be given as integers--gears don't have fractional teeth.
-# The ONLY decimal figures here should be metric pitches.
+# The ONLY decimal figures here should be metric pitches. Yes, 2-4 1/2, I know.
 # If you know about modules and gears, you know what I'm talking about.
 # If you don't, GTS, you're about to run a lathe, aren't you?
 # ------------------------------------------------------------------------------
@@ -65,10 +65,12 @@
 # Some common Metric pitches are 0.8,1,1.5,1.75,2,2.5,3,3.5,4,4.5,5
 # Some common SAE pitches are 40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6
 #
+# 4,6,8, and 10 thou feedrates are 250,167,125, and 100 'tpi'.
+#
 # These gears came with my lathe; be careful, processing time increases
 # exponentially with gear numbers:
 gears_available=20,24,33,35,40,48,50,52,60,60,66,70,72,75,80,80,84
-pitches=40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6
+pitches=250,167,125,100,40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6
 pitch_unit=tpi
 spindle_teeth=56
 spindle_diameter=56

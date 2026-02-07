@@ -6,6 +6,7 @@ import argparse
 import time
 import math
 import logging
+import decimal
 
 # TPI-box to get perfect tpi gear ratios on a MW210V lathe.
 # The gears hang behind the spindle, and are arranged as depicted below.
@@ -100,7 +101,7 @@ for O in range(S+no_snag, max_O):
             # Abs tol is 1 order of magnitude larger than smallest float.
             # If Z_effective is divisible by 1/1024 inch, it's usable.
             if math.isclose(Z_effective % (25.4/1024), 0, abs_tol = 1e-8):
-                all_sets = all_sets + [[P, I, M, N, Q, O, Z_effective]]
+                all_sets = all_sets + [[P, I, M, N, Q, O, float(f"{Z_effective:.6f}")]]
 
 # Inform the user.
 print (f"\nFound {counter} sets.")

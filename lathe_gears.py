@@ -64,7 +64,10 @@ def possible_permutations(gears_available):
         total = total + math.prod(list(range(gears_available, gears_available-p, -1))) * math.factorial(p)
     return total
 
-# Create an example data file.
+# Create an example data file. Wouldn't it be a proper piss-off to get this
+# program without its data/config file? So here's a sample one to start with.
+# To create an example data file run:
+# ~/this/file/path$ pyhton3 lathe_gears.py -e
 def write_data_file(file_path):
     lines = [
         '# Lathe data listing. Data here is valid for my MW210V 8x39.',
@@ -81,7 +84,7 @@ def write_data_file(file_path):
         '# gear_clearance are \'equivalent sizes\', that is to say, they are the number',
         '# of teeth a gear of the same dimension as the desired dimension would have.',
         '# They SHOULD be given as integers--gears don\'t have fractional teeth.',
-        '# The ONLY decimal figures here should be metric pitches.',
+        '# The ONLY decimal figures here should be metric pitches. Yes, 2-4 1/2, I know.',
         '# If you know about modules and gears, you know what I\'m talking about.',
         '# If you don\'t, GTS, you\'re about to run a lathe, aren\'t you?',
         '# ------------------------------------------------------------------------------',
@@ -134,10 +137,12 @@ def write_data_file(file_path):
         '# Some common Metric pitches are 0.8,1,1.5,1.75,2,2.5,3,3.5,4,4.5,5',
         '# Some common SAE pitches are 40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6',
         '#',
+        '# 4,6,8, and 10 thou feedrates are 250,167,125, and 100 \'tpi\'.',
+        '#',
         '# These gears came with my lathe; be careful, processing time increases',
         '# exponentially with gear numbers:',
         'gears_available=20,24,33,35,40,48,50,52,60,60,66,70,72,75,80,80,84',
-        'pitches=40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6',
+        'pitches=250,167,125,100,40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6',
         'pitch_unit=tpi',
         'spindle_teeth=56',
         'spindle_diameter=56',
@@ -527,28 +532,48 @@ total_fitting_sets=len(fitting_sets)
 print (f"\n\nFound {total_fitting_sets} sets fitting the lathe.")
 print (f"\nWith the nearest matches to the target pitches being:\n")
 
-# Search all populations for closest fit to target pitches,
-# and publish nearest smaller and nearest bigger result.
-# TODO implement best set based on std dev
+# Search all populations for closest fit to target pitches, and publish
+# either the best (lowest std. dev. of gear sizes) perfect fit, or the
+# nearest smaller and nearest bigger result.
+zero_error_exists = False
 if output_format == 'layout':
     for i in range(total_fitting_sets-1):
         p = fitting_sets[i]
+        if p[0] == target and not zero_error_exists:
+            # First (lowest std. dev.) perfect pitch.
+            zero_error_exists = True
+            print(f"-- {target} {label} --------------");
+            print(set_pattern(p, target))
+            print ("")
+            logger.info(f"-- {target} {label} --------------");
+            logger.info(set_pattern(p, target))
+            logger.info("")
         if p[0] > target:
-            if i > 0:
-                print(set_pattern(fitting_sets[i-1],target))
+            if not zero_error_exists:
+                # We found no perfect matches; publish the closest smaller and larger ones.
+                if i >0:
+                    # There is a previous (nearest smaller) option.
+                    prev_p = fitting_sets[i-1]
+                    print(set_pattern(fitting_sets[i-1],target))
+                    logger.info(set_pattern(fitting_sets[i-1],target))
+                # The current (nearest larger) option.
                 print(f"-- {target} {label} --------------");
                 print(set_pattern(p, target))
                 print ("")
-                logger.info(set_pattern(fitting_sets[i-1],target))
                 logger.info(f"-- {target} {label} --------------");
                 logger.info(set_pattern(p, target))
                 logger.info("")
+            # Reset zero error flag.
+            zero_error_exists = False
+            # TODO potentially, p CAN be (but _likely_ is not) the next target lowest STD DEV solution, if we don't grab that here, we're off to evaluate the NEXT set, which may NOT be the optimal set for the next target (which we're about to pop next) probably not an issue though...
             if pitches:
+                # There are more target pitches to check
                 target = pitches.pop(0)
-            else:
-                target = 10000
+            else :
+                # We're done
+                break
 else:
-    zero_error_exists = False
+    # See previous for-loop for explanatory comments.
     for i in range(total_fitting_sets-1):
         p = fitting_sets[i]
         if p[0] == target:
@@ -557,7 +582,6 @@ else:
             logger.info(p)
         if p[0] > target:
             if not zero_error_exists:
-                # We found no perfect matches; publish the closest smaller and larger ones.
                 if i >0:
                     prev_p = fitting_sets[i-1]
                     print(f"{prev_p}, {(target-prev_p[0])/target*100:.3f} % error.")
@@ -568,9 +592,9 @@ else:
             if pitches:
                 target = pitches.pop(0)
             else :
-                target = 1e6
+                break
 
-# For proper interpretation of 'smallest' and 'biggest' pitches. For TPI, big numbers mean small pitch and v.v....
+# For proper interpretation of 'smallest' and 'biggest' pitches. For TPI, big numbers mean small pitch and v.v.
 if pitch_unit == 'tpi':
     big_and_small = f'Smallest feedrate:\n{set_pattern(fitting_sets[total_fitting_sets-1],0)}\n\nBiggest feedrate:\n{set_pattern(fitting_sets[0],0)}'
 else:
