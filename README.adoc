@@ -58,23 +58,30 @@ options:
                         Comma separated list of feedrate(s) of interest.
   -u, --unit {mm,tpi}   Pitch unit.
   -c, --check 60,40,H,80,H,70 [target-pitch ...]
-                        Check a gear set--given as a comma separated list of
-                        6(!) gear positions A,B,C,D,E,F--for fit and resulting
-                        pitch. Target-pitch is optional, if specified, an
-                        error percentage is also calculated; you _must_ use
-                        'H' for empty gear positions as per the example.
+                        Check a gear set--given as a comma separated list
+                        of 6(!) gear positions A,B,C,D,E,F--for fit and
+                        resulting pitch. Target-pitch is optional, if
+                        specified, an error percentage is also calculated;
+                        you _must_ use 'H' for empty gear positions as per
+                        the example.
   -i, --input file_name
                         Data file name when not using the default
-                        'lathe_data'; provide full path if it's not located in
-                        the program directory.
+                        'lathe_data'; provide full path if it's not
+                        located in the program directory.
   -e, --example [file_name]
-                        Create an example lathe data file and exit. The file
-                        name is optional and defaults to 'gear_data_example'.
+                        Create an example lathe data file and exit. The
+                        file name is optional and defaults to
+                        'gear_data_example'.
   -o, --output file_name
-                        Non-default output file name; defaults are set in the
-                        data file.
-  -f, --format {list,layout}
-                        Output format, 'list' lists ALL working sets in a
-                        simple format, 'layout' only gives the best* sets in a
-                        pretty layout. (*see README)
+                        Non-default output file name; defaults are set in
+                        the data file.
+  -f, --format {layout,list,zerolist,all}
+                        Output format, 'layout' only gives the best* sets
+                        in a pretty layout, 'list' does the same in a
+                        short format, 'zerolist' does the same but
+                        includes ALL zero-error sets, 'all' gives ALL
+                        fitting sets in short format. The last two only
+                        write to the log-file as these lists are likely to
+                        be too long for most terminal buffers. (*see
+                        README)
 ....
