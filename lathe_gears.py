@@ -11,7 +11,6 @@
 #
 # This program was inspired by the one written by Matthias Wandel, see:
 # <https://github.com/Matthias-Wandel/lathe-thread-gears>
-
 # ------------------------------------------------------------------------------
 # IMPORTANT:
 # Data is read from the default input file 'lathe_data'.
@@ -19,9 +18,23 @@
 # and a default data file 'lathe_data_example' will be created.
 # Edit that to your heart's content.
 # ------------------------------------------------------------------------------
-
-# ------------------------------------------------------------------------------
 # For (a little) help call this program like: pyhton3 lathe_gears.py -h
+# ------------------------------------------------------------------------------
+# There are four possible gear configurations on the MW210:
+#
+# 'H' designates a spacer bushing, or just a small gear that won't interfere,
+# '|' designates meshing, '-' designates a gearpost, and '=' designates the
+# leadscrew. 'S' is the (fixed) spindle gear.
+#
+#  I      II      III     IV
+#
+# S      S       S       S
+# |      |       |       |
+# A-H    A-B     A-H     A-B      There is only one possible population
+# |        |     |         |      with 3 or 5 gears (I and IV);there are two
+# C-H    H-D     C-D     C-D      possibilities with 4 (II and III).
+# |        |       |     |        I call II the 'dogleg' and III the 'flash'.
+# E=H    H=F     H=F     E=H
 # ------------------------------------------------------------------------------
 
 import sys
@@ -61,13 +74,13 @@ def print_progress_bar(index, total, label=""):
 # This is used only to inform the user.
 def possible_permutations(gears_available):
     total=0
-    for p in [3,4,4,5]: # Configurations I through IV, see above.
+    for p in [3,4,4,5]: # Configurations I through IV, see introduction.
         total = total + math.prod(list(range(gears_available, gears_available-p, -1))) * math.factorial(p)
     return total
 
 # Create an example data file. Wouldn't it be a proper piss-off to get this
 # program without its data/config file? So here's a sample one to start with.
-# To create an example data file run:
+# To create an example data file call:
 # ~/this/file/path$ pyhton3 lathe_gears.py -e
 def write_data_file(file_path):
     lines = [
@@ -118,10 +131,10 @@ def write_data_file(file_path):
         '#                           clearance between the non-meshing gears A and C.',
         '# gears_output_file      -- Output file name.',
         '# output_format          -- Output format, \'layout\' prints only the best gear',
-        '#                           sets like on the lathe gear table, \'list\' prints',
-        '#                           ALL zero-error gear sets in a more compact fashion,',
-        '#                           as well as the nearset smaller and larger results',
-        '#                           of pitches that cannot achieve zero error.',
+        '#                           sets in the same format as on the lathe gear table,',
+        '#                           \'list\' prints ALL usable sets, i.e., all zero-error',
+        '#                           gear sets as well as the nearest smaller and larger',
+        '#                           results of pitches that cannot achieve zero error.',
         '# check_set_output_file  -- Output file name when using the -c option.',
         '#',
         '# NOTES:',
@@ -141,7 +154,7 @@ def write_data_file(file_path):
         '# 4,6,8, and 10 thou feedrates are 250,167,125, and 100 \'tpi\'.',
         '#',
         '# These gears came with my lathe; be careful, processing time increases',
-        '# exponentially with gear numbers:',
+        '# exponentially with the number of gears, and linearly with pitches:',
         'gears_available=20,24,33,35,40,48,50,52,60,60,66,70,72,75,80,80,84',
         'pitches=250,167,125,100,40,32,28,24,20,18,16,14,13,12,11,10,9,8,7,6',
         'pitch_unit=tpi',
@@ -159,17 +172,17 @@ def write_data_file(file_path):
     ]
     # Write the example file, warn if it already exists.
     try:
-        with open(file_path, "x") as file:
+        with open(file_path, "x") as file_:
             for line in lines:
-                file.write(f"{line}\n")
+                file_.write(f"{line}\n")
     except FileExistsError:
         print(f"Error: The file \'{file_path}\' already exists.")
 
 # Read and process a data file.
 def read_data_file(file_path):
     try:
-        with open(file_path, 'r') as f:
-            file_lines = list(f.readlines())
+        with open(file_path, 'r') as file_:
+            file_lines = list(file_.readlines())
     except FileNotFoundError:
         print(f"Error: The file '{file_path}' was not found.")
     except Exception as e:
@@ -182,40 +195,41 @@ def read_data_file(file_path):
 def all_possible_sets(gears):
     return list(itertools.chain.from_iterable(itertools.combinations(gears, r) for r in [3,4,5]))
 
-# Check linear fit ('A' gear reaches Spindle gear).
-# 'gears' are AACCE ABDDF AACDF ABDCE  for I through IV (above) respectively.
+# Check linear fit ('A' gear reaches Spindle gear), 'gears' are
+# AACCE ABDDF AACDF ABDCE  for I - IV (see introduction) respectively.
 def check_reach_fit(gears):
     if sum(gears)/2 < min_out_dim:
         return False
     return True
 
 # Check linear fit (total center distances leadscrew - bottom post - top post).
-# 'gears' are ACCE BDDF ACDF BDCE for I through IV (above) respectively.
+# 'gears' are ACCE BDDF ACDF BDCE for I - IV (see introduction) respectively.
 def check_centers_fit(gears):
     if sum(gears)/2 > max_centers:
         return False
     return True
 
-# Check 'A' gear shaft threads clear the belt drive.
+# Check 'A' gear post threads clear the belt drive.
 def check_belt_cleared(a):
     if a < 33:
         return False
     return True
 
-# Check 'B' gear clears spindle ('A' is the meshing gear) see II and IV above.
+# Check 'B' gear clears spindle ('A' is the meshing gear),
+# see II and IV in introduction.
 def check_spindle_cleared(a,b):
     if (b + spindle_diameter) >= (spindle_teeth + a):
         return False
     return True
 
-# Check 'C' or 'D' (whichever may be the case, see III and IV above) gear
-# clears spindle.
+# Check 'C' or 'D' gear clears spindle--whichever may be the case,
+# see III and IV in introduction.
 def check_lead_cleared(a,b,c):
     if (a + leadscrew_diameter) >= (b + c):
         return False
     return True
 
-# Check 'A' gear clears 'C' gear, see IV above.
+# Check 'A' gear clears 'C' gear, see IV in introduction.
 def check_gear_cleared(a,b,c,d):
     if (a + c + gear_clearance) >= (b + d):
         return False
@@ -231,60 +245,60 @@ def check_gear_set(check_set, check_pitch=0, output_file='check_set_results'):
         filemode='a' # use 'a' to append, 'w' to overwrite each time
     )
     count = 0
-    fits = ""
+    finding = ""
     if not check_belt_cleared(check_set[1]):
-        fits = fits + "\n\'A\' gear post fouls Spindle pulley."
+        finding = finding + "\n\'A\' gear post fouls Spindle pulley."
     for i in check_set:
         if i == 'H':
             count += 1
     if count == 3: # I - three gears.
         pitch = spindle_teeth*leadscrew_pitch/check_set[5]
         if not check_centers_fit([check_set[1],check_set[3],check_set[3],check_set[5]]):
-            fits = fits + "\nTotal center distance too large"
+            finding = finding + "\nTotal center distance too large"
         if not check_reach_fit([check_set[1],check_set[1],check_set[3],check_set[3],check_set[5]]):
-            fits = fits + "\n\'A\' gear doesn\'t reach Spindle."
+            finding = finding + "\n\'A\' gear doesn\'t reach Spindle."
     if count == 2: # II or III - four gears.
         if check_set[3] == 'H': # II - 'dogleg'.
             pitch = spindle_teeth*leadscrew_pitch/check_set[1]*check_set[2]/check_set[6]
             if not check_centers_fit([check_set[2],check_set[4],check_set[4],check_set[6]]):
-                fits = fits + "\nTotal center distance too large"
+                finding = finding + "\nTotal center distance too large"
             if not check_reach_fit([check_set[1],check_set[2],check_set[4],check_set[4],check_set[6]]):
-                fits = fits + "\n\'A\' gear doesn\'t reach Spindle."
+                finding = finding + "\n\'A\' gear doesn\'t reach Spindle."
             if not check_spindle_cleared(check_set[1],check_set[2]):
-                fits = fits + "\nB gear fouls spindle"
+                finding = finding + "\nB gear fouls spindle"
         else: # III - 'flash'.
             pitch = spindle_teeth*leadscrew_pitch/check_set[3]*check_set[4]/check_set[6]
             if not check_centers_fit([check_set[1],check_set[3],check_set[4],check_set[6]]):
-                fits = fits + "\nTotal center distance too large"
+                finding = finding + "\nTotal center distance too large"
             if not check_reach_fit([check_set[1],check_set[1],check_set[3],check_set[4],check_set[6]]):
-                fits = fits + "\n\'A\' gear doesn\'t reach Spindle."
+                finding = finding + "\n\'A\' gear doesn\'t reach Spindle."
             if not check_spindle_cleared(check_set[1]*2+check_set[3],check_set[4]):
-                fits = fits + "\nB gear fouls spindle"
+                finding = finding + "\nB gear fouls spindle"
             if not check_lead_cleared(check_set[3],check_set[4],check_set[6]):
-                fits = fits + "\nC gear fouls leadscrew"
+                finding = finding + "\nC gear fouls leadscrew"
     if count == 1: # IV - five gears.
         pitch = spindle_teeth*leadscrew_pitch/check_set[1]*check_set[2]/check_set[4]*check_set[3]/check_set[5]
         if not check_centers_fit([check_set[2],check_set[4],check_set[3],check_set[5]]):
-            fits = fits + "\nTotal center distance too large"
+            finding = finding + "\nTotal center distance too large"
         if not check_reach_fit([check_set[1],check_set[2],check_set[4],check_set[3],check_set[5]]):
-            fits = fits + "\n\'A\' gear doesn\'t reach Spindle."
+            finding = finding + "\n\'A\' gear doesn\'t reach Spindle."
         if not check_lead_cleared(check_set[4],check_set[3],check_set[5]):
-            fits = fits + "\nD gear fouls leadscrew"
+            finding = finding + "\nD gear fouls leadscrew"
         if not check_gear_cleared(check_set[1],check_set[2],check_set[3],check_set[4]):
-            fits = fits + "\nA and C gears interfere"
+            finding = finding + "\nA and C gears interfere"
     pitch = convert(pitch)
     check_set[0] = pitch
-    fstring = f"\n-- {label} ------------------"
+    title = f"\n-- {label} ------------------"
     if check_pitch != 0:
-            fstring = f"\n-- {check_pitch} {label} ------------------"
-    if fits == "":
-        fits = "Gears fit."
-    print(fstring);
+            title = f"\n-- {check_pitch} {label} ------------------"
+    if finding == "":
+        finding = "Gears fit."
+    print(title);
     print(set_pattern(check_set, check_pitch))
-    print(fits)
-    logger.info(fstring)
+    print(finding)
+    logger.info(title)
     logger.info(set_pattern(check_set, check_pitch))
-    logger.info(fits)
+    logger.info(finding)
 
 # Pattern output of a gear set (like on the lathe decal).
 def set_pattern(p, target):
@@ -293,7 +307,7 @@ def set_pattern(p, target):
             p[i] = 'H'
     # If there is no target, like with a single gear check (CLI option -c):
     if target == 0:
-        err_str = ""
+        err_str = f'  {label}'
     else:
         err = (p[0]-target)/target*100
         if round(err, 6) == 0:
@@ -310,13 +324,13 @@ def set_pattern(p, target):
     return pp
 
 # List output of a gear set.
-def set_list(p, target):
+def set_list(p, target, verbose=False):
     for i in range(1,7):
         if p[i] == 1:
             p[i] = 'H'
     # There is no target with a single gear check (CLI option -c) so:
     if target == 0:
-        err_str = ""
+        err_str = f'  {p[0]:.3f}  {label}'
         t_str = ""
     else:
         t_str = f"{target:<4} "
@@ -325,29 +339,27 @@ def set_list(p, target):
             err_str = f" {target:>8}, Error-free"
         else:
             if imperial:
-                err_str = f" {p[0]:>8.4f}, Error: {err:>6.3f}% or {10*err:>4.1f} Thou per Inch"
+                err_str = f" {p[0]:>8.4f}, Error: {err:>7.3f}% or {10*err:>4.1f} Thou per Inch"
             else:
-                err_str = f" {p[0]:>8.4f}, Error: {err:>6.3f}% or {err/100*target:>5.2f} mm per thread"
-    pp =(
-        t_str
-        # Show std. dev. and avg. gear size.
-        #+ f"[{p[1]:>2}, {p[2]:>2}, {p[3]:>2}, {p[4]:>2}, {p[5]:>2}, {p[6]:>2}, {p[7]:.2f}, {p[8]:<5}]"
-        + f"[{p[1]:>2}, {p[2]:>2}, {p[3]:>2}, {p[4]:>2}, {p[5]:>2}, {p[6]:>2}]"
-        + err_str
-    )
-    return pp
+                err_str = f" {p[0]:>8.4f}, Error: {err:>7.3f}% or {err/100*target:>5.2f} mm per thread"
+    if verbose:
+        # Show std. dev., avg. gear size, and total teeth.
+        g_str = f"[{p[1]:>2}, {p[2]:>2}, {p[3]:>2}, {p[4]:>2}, {p[5]:>2}, {p[6]:>2}, {p[7]:>5.2f}, {p[8]:>5.2f}, {p[9]:>3}]"
+    else:
+        g_str = f"[{p[1]:>2}, {p[2]:>2}, {p[3]:>2}, {p[4]:>2}, {p[5]:>2}, {p[6]:>2}]"
+    return t_str + g_str + err_str
 
 # convert() becomes an alias (below) for one of these two:
 # Leadscrew and pitches have the same units, either mm or tpi.
-def no_conversion(value):
+def no_unit_conversion(value):
     return value
 # Leadscrew and pitches have different units, either mm or tpi.
-# Since A/b=c <=> A/c=b...
-def conversion(value):
+# Since 25.4/tpi=mm <=> 25.4/mm=tpi...
+def unit_conversion(value):
     return 25.4/value
 
 # ------------------------------------------------------------------------------
-# CLI arguments parsing.
+# CLI arguments parsing/help output.
 
 parser = argparse.ArgumentParser(description="Determine gear sets for feed-rates on a lathe, written with the MW210V in mind.")
 parser.add_argument('-g', '--gears', metavar=('84,72,60 ...'), type=str, help="Comma separated list of available gears.")
@@ -357,7 +369,7 @@ parser.add_argument('-c', '--check', nargs='+', metavar=('60,40,H,80,H,70',  'ta
 parser.add_argument('-i', '--input', default='lathe_data', metavar=('file_name'), type=str, help="Data file name when not using the default \'lathe_data\'; provide full path if it\'s not located in the program directory.")
 parser.add_argument('-e', '--example', nargs='?', const='lathe_data_example', metavar=('file_name'), type=str, help="Create an example lathe data file and exit. The file name is optional and defaults to \'gear_data_example\'.")
 parser.add_argument('-o', '--output', metavar=('file_name'), type=str, help="Non-default output file name; defaults are set in the data file.")
-parser.add_argument('-f', '--format', choices=['list','layout'], type=str, help="Output format, \'list\' lists ALL working sets in a simple format, \'layout\' only gives the best* sets in a pretty layout. (*see README)")
+parser.add_argument('-f', '--format', choices=['layout','list','zerolist','all'], type=str, help="Output format, \'layout\' only gives the best* sets in a pretty layout, \'list\' does the same in a short format, \'zerolist\' does the same but includes ALL zero-error sets, \'all\' gives ALL fitting sets in short format. The last two only write to the log-file as these lists are likely to be too long for most terminal buffers. (*see README)")
 args = parser.parse_args()
 
 # ------------------------------------------------------------------------------
@@ -437,30 +449,37 @@ imperial = label == 'TPI'
 
 # Function alias to simplify code.
 if pitch_unit == leadscrew_unit:
-    convert = no_conversion
+    convert = no_unit_conversion
 else:
-    convert = conversion
+    convert = unit_conversion
 
 # Are we checking a single gear set?
-# These results are logged in _append_ mode
+# These results are logged in _append_ mode, i.e., multiple check results
+# are stored in the same file.
 if args.check:
     # Pre-load target pitch (optional user input).
     check_pitch = 0
+    # Depending on _how_ the user gave us the parameters, e.g.,
+    # "A,B,C,D,E,F,Pitch" or "A,B C,D E,F" or even "A,B,C D,E F Pitch",
+    # we need to sanitise them.
     check_gears = [item for string in args.check for item in string.split(',')]
     length = len(check_gears)
     if not length > 5:
         raise ValueError("Set must have 6 positions A,B,C,D,E,F plus optional target pitch!")
+    # In case the user wants a non-standard log-file.
     if args.output:
         check_set_output = args.output
     if length > 6:
         # User has specified a target pitch.
         check_pitch = float(check_gears[-1])
-    check_set=[0] # Place holder for resulting pitch value.
+    check_set=[0] # Placeholder for resulting pitch value.
     for i in check_gears[0:6]:
-        if i == 'H':
-            check_set = check_set + [i]
+        # Allow for user 'inattention' (within limits).
+        if i == 'H' or i == 'h' or i == '1':
+            check_set = check_set + ['H']
         else:
             check_set = check_set + [int(i)]
+    # Process and publish result, and exit.
     check_gear_set(check_set, check_pitch, check_set_output)
     sys.exit(0)
 
@@ -527,7 +546,9 @@ for s in all_sets:
                     # Gears standard deviation -- see comment elsewhere
                     statistics.stdev([p[0],p[1],p[2]]),
                     # Average gear -- see comment elsewhere
-                    statistics.mean([p[0],p[1],p[2]])
+                    statistics.mean([p[0],p[1],p[2]]),
+                    # Sum of gear teeth
+                    sum([p[0],p[1],p[2]])
                 ]]
         if len(p) == 4:
             # Configuration II (dogleg) p = [A,B,D,E]
@@ -539,7 +560,8 @@ for s in all_sets:
                     convert(spindle_teeth*leadscrew_pitch/p[0]*p[1]/p[3]),
                     p[0], p[1], 1, p[2], 1, p[3],
                     statistics.stdev([p[0],p[1],p[2],p[3]]),
-                    statistics.mean([p[0],p[1],p[2],p[3]])
+                    statistics.mean([p[0],p[1],p[2],p[3]]),
+                    sum([p[0],p[1],p[2],p[3]])
                 ]]
             # Configuration III (flash) p = [A,C,D,F]
             if (check_belt_cleared(p[0]) and
@@ -551,7 +573,8 @@ for s in all_sets:
                     convert(spindle_teeth*leadscrew_pitch/p[1]*p[2]/p[3]),
                     p[0], 1, p[1], p[2], 1, p[3],
                     statistics.stdev([p[0],p[1],p[2],p[3]]),
-                    statistics.mean([p[0],p[1],p[2],p[3]])
+                    statistics.mean([p[0],p[1],p[2],p[3]]),
+                    sum([p[0],p[1],p[2],p[3]])
                 ]]
         if len(p) == 5:
             # Configuration IV (questionmark) p = [A,B,D,C,E]
@@ -565,7 +588,8 @@ for s in all_sets:
                     convert(spindle_teeth*leadscrew_pitch/p[0]*p[1]/p[2]*p[3]/p[4]),
                     p[0], p[1], p[3], p[2], p[4], 1,
                     statistics.stdev([p[0],p[1],p[2],p[3],p[4]]),
-                    statistics.mean([p[0],p[1],p[2],p[3],p[4]])
+                    statistics.mean([p[0],p[1],p[2],p[3],p[4]]),
+                    sum([p[0],p[1],p[2],p[3],p[4]])
                 ]]
 
 # Because sets have empty spaces, there are 'permutations' with the same gear
@@ -573,20 +597,30 @@ for s in all_sets:
 # results in duplicates. Remove them:
 fitting_sets = list(map(list,list(dict.fromkeys(map(tuple, fitting_sets)))))
 # Sort by effective pitch, then by std. deviation descending, then
-# by avg. gear size. This results in the sets with the smallest spread
-# (i.e., most 'similar' gears) being published in the 'pretty layout' format.
-fitting_sets.sort(key=lambda x: (x[0],-x[7],-x[8],x[1],x[2],x[3],x[4],x[5],x[6]))
-
-# Grab the first target from the pitches-list.
-target = pitches.pop(0)
+# by total gear size descending. This results in the sets with the smallest
+# gears with the smallest spread (i.e., most 'similar' gears) being published.
+fitting_sets.sort(key=lambda x: (x[0],-x[7],-x[9]))
 
 # More user info.
 print (f"\n\nFound {len(fitting_sets)} sets fitting the lathe.")
-print (f"\nWith the nearest matches to the target pitches being:\n")
+if output_format == 'layout' or output_format == 'list':
+    print (f"\nWith the nearest matches to the target pitches being:\n")
+
+# For proper interpretation of 'smallest' and 'biggest' pitches. For TPI, big numbers mean small pitch and v.v.
+if imperial:
+    smallest_biggest = [fitting_sets[-1],fitting_sets[0]]
+else:
+    smallest_biggest = [fitting_sets[0],fitting_sets[-1]]
+if output_format == 'layout':
+    sb_result = f'\nSmallest feedrate:\n{set_pattern(smallest_biggest[0],0)}\n\nBiggest feedrate:\n{set_pattern(smallest_biggest[1],0)}'
+else:
+    sb_result = f'\nSmallest feedrate:\n{set_list(smallest_biggest[0],0)}\n\nBiggest feedrate:\n{set_list(smallest_biggest[-1],0)}'
 
 # Search all populations for closest fit to target pitches, and publish
 # either the best (lowest std. dev. of gear sizes) perfect fit, or the
-# nearest smaller and nearest bigger result.
+# nearest smaller and nearest bigger result, depending on output format.
+# Grab the first target from the pitches-list and initiate the counter.
+target = pitches.pop(0)
 i = 0
 if output_format == 'layout':
     while i < len(fitting_sets):
@@ -602,7 +636,8 @@ if output_format == 'layout':
                 logger.info(f"-- {target} {label} --------------");
                 logger.info(set_pattern(p, target))
                 logger.info("")
-                # 'Reset' the counter; the next target may also be too small...
+                # 'Reset' the counter; the next target pitch may also be smaller
+                # so we can't step past this result yet.
                 i = -1
             else:
                 # We're at a point where there are pitches that are equal to,
@@ -636,43 +671,86 @@ if output_format == 'layout':
                 # We're done
                 break
         i += 1
-else:
+    print(sb_result)
+    logger.info(sb_result)
+elif output_format == 'list':
+    # Publish same 'best' sets as 'layout', but in the short 'list' format.
     # See previous for-loop for explanatory comments.
     while i < len(fitting_sets):
         p = fitting_sets[i]
-        if i == 0:
-            if p[0] > target:
+        if p[0] > target:
+            if i == 0:
                 print(set_list(p, target))
                 logger.info(set_list(p, target))
                 i = -1
-        else:
-            if p[0] == target:
-                    print(set_list(p, target))
-                    logger.info(set_list(p, target))
-            if p[0] > target:
+            else:
                 prev_p = fitting_sets[i-1]
-                if prev_p[0] < target:
+                if prev_p[0] == target:
+                    print(set_list(prev_p, target))
+                    logger.info(set_list(prev_p, target))
+                else:
                     print(set_list(prev_p, target))
                     logger.info(set_list(prev_p, target))
                     print(set_list(p, target))
                     logger.info(set_list(p, target))
-                if pitches:
-                    target = pitches.pop(0)
-                else :
-                    break
+            if pitches:
+                target = pitches.pop(0)
+            else:
+                break
         i += 1
-    print("")
-    logger.info("")
-
-# For proper interpretation of 'smallest' and 'biggest' pitches. For TPI, big numbers mean small pitch and v.v.
-if pitch_unit == 'tpi':
-    big_and_small = f'Smallest feedrate:\n{set_pattern(fitting_sets[-1],0)}\n\nBiggest feedrate:\n{set_pattern(fitting_sets[0],0)}'
+    print(sb_result)
+    logger.info(sb_result)
+elif output_format == 'zerolist':
+    # Publish same 'best' sets as 'layout', in addition to ALL zero-error
+    # sets, in the short 'list' format.
+    # See previous for-loop for explanatory comments.
+    while i < len(fitting_sets):
+        p = fitting_sets[i]
+        if p[0] == target:
+            logger.info(set_list(p, target, True))
+        if p[0] > target:
+            if i == 0:
+                logger.info(set_list(p, target, True))
+                i = -1
+            else:
+                prev_p = fitting_sets[i-1]
+                if prev_p[0] < target:
+                    logger.info(set_list(prev_p, target, True))
+                    logger.info(set_list(p, target, True))
+            if pitches:
+                target = pitches.pop(0)
+            else :
+                break
+        i += 1
+    logger.info(sb_result)
+    print(f'\nSee the file \'{gears_output}\' for results.')
 else:
-    big_and_small = f'Smallest feedrate:\n{set_pattern(fitting_sets[0],0)}\n\nBiggest feedrate:\n{set_pattern(fitting_sets[-1],0)}'
-
-# Publish in both places.
-logger.info(big_and_small)
-print(big_and_small)
+    # Print ALL fitting sets in 'list' format.
+    # See first for-loop for explanatory comments.
+    # We're listing ALL fitting sets. Targets (switch-points for accuracy test)
+    # become the _average_ of two consecutive pitches; this way we test against
+    # the _nearest_ pitch.
+    s_target = target
+    b_target = pitches.pop(0) # TODO this goes wrong with a one-pitch list.
+    target = (s_target+b_target)/2
+    while i < len(fitting_sets):
+        p = fitting_sets[i]
+        if p[0] > b_target:
+            s_target = b_target
+            if pitches:
+                b_target = pitches.pop(0)
+            else:
+                b_target = 100000
+            target = (s_target+b_target)/2
+            i = max(0, i-1)
+        else:
+            if p[0] < target:
+                logger.info(set_list(p, s_target, True))
+            else:
+                logger.info(set_list(p, b_target, True))
+        i += 1
+    logger.info(sb_result)
+    print(f'\nSee the file \'{gears_output}\' for results.')
 
 # Record the end time and publish total runtime.
 end_time = time.perf_counter()
